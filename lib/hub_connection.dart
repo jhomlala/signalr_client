@@ -269,7 +269,12 @@ class HubConnection {
     // HttpConnection.stop() should not complete until after either HttpConnection.start() fails
     // or the onclose callback is invoked. The onclose callback will transition the HubConnection
     // to the disconnected state if need be before HttpConnection.stop() completes.
-    return _connection.stop(error: error);
+    try {
+      return _connection.stop(error: error);
+    } catch (exception){
+      _logger?.warning("Catched exception in stop connection.");
+    }
+    return Future.value();
   }
 
   /// Invokes a streaming hub method on the server using the specified name and arguments.
