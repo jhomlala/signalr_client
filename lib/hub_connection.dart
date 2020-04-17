@@ -329,7 +329,7 @@ class HubConnection {
 
   Future<void> _sendMessage(Object message) {
     _resetKeepAliveInterval();
-    return _connection.send(message);
+    return _connection?.send(message);
   }
 
   /// Sends a js object to the server.
@@ -424,6 +424,15 @@ class HubConnection {
     }
 
     _methods[methodName].add(newMethod);
+  }
+
+  Future stopHardConnection(){
+    try{
+      return _connection.stop();
+    } catch (exception){
+      _logger.warning(exception);
+    }
+    return null;
   }
 
   void cleanup(){

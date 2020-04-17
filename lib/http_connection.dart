@@ -285,26 +285,31 @@ class HttpConnection implements IConnection {
 
   @override
   Future<void> stop({Exception error}) async {
+    try {
+      if (_connectionState == ConnectionState.Disconnected) {
+        _logger?.finer(
+            "Call to HttpConnection.stop($error) ignored because the connection is already in the disconnected state.");
+        return Future.value();
+      }
 
-    if (_connectionState == ConnectionState.Disconnected) {
-      _logger?.finer("Call to HttpConnection.stop($error) ignored because the connection is already in the disconnected state.");
-      return Future.value();
+      if (_connectionState == ConnectionState.Disconnecting) {
+        _logger?.finer(
+            "Call to HttpConnection.stop($error) ignored because the connection is already in the disconnecting state.");
+        return _stopPromise;
+      }
+
+      _connectionState = ConnectionState.Disconnecting;
+
+      // Don't complete stop() until stopConnection() completes.
+      _stopPromiseCompleter = Completer();
+      _stopPromise = _stopPromiseCompleter.future;
+
+      // stopInternal should never throw so just observe it.
+      await _stopInternal(error: error);
+      await _stopPromise;
+    } catch (exception){
+      _logger.warning(exception);
     }
-
-    if (_connectionState == ConnectionState.Disconnecting) {
-      _logger?.finer("Call to HttpConnection.stop($error) ignored because the connection is already in the disconnecting state.");
-      return _stopPromise;
-    }
-
-    _connectionState = ConnectionState.Disconnecting;
-
-    // Don't complete stop() until stopConnection() completes.
-    _stopPromiseCompleter = Completer();
-    _stopPromise = _stopPromiseCompleter.future;
-
-    // stopInternal should never throw so just observe it.
-    await _stopInternal(error: error);
-    await _stopPromise;
   }
 
   Future<void> _stopInternal({Exception error}) async {
