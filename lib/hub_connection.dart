@@ -38,11 +38,11 @@ typedef ReconnectedCallback = void Function({String connectionId});
 class HubConnection {
   // Either a string (json) or Uint8List (binary);
   Object _cachedPingMessage;
-  final IConnection _connection;
-  final Logger _logger;
-  final IRetryPolicy _reconnectPolicy;
-  final IHubProtocol _protocol;
-  final HandshakeProtocol _handshakeProtocol;
+  IConnection _connection;
+  Logger _logger;
+  IRetryPolicy _reconnectPolicy;
+  IHubProtocol _protocol;
+  HandshakeProtocol _handshakeProtocol;
 
   Map<String, InvocationEventCallback> _callbacks;
   Map<String, List<MethodInvocationFunc>> _methods;
@@ -434,8 +434,13 @@ class HubConnection {
       _completeClose();
       _cleanupTimeout();
       _cleanupPingTimer();
+      _logger = null;
+      _connection = null;
+      _reconnectPolicy = null;
+      _protocol = null;
+      _handshakeProtocol = null;
     } catch (exception){
-      _logger.warning("Cleaup failed",exception);
+      _logger?.warning("Cleaup failed",exception);
     }
   }
 
