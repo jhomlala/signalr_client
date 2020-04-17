@@ -426,6 +426,32 @@ class HubConnection {
     _methods[methodName].add(newMethod);
   }
 
+  void cleanup(){
+    try {
+      removeAllCallbacks();
+      removeAllMethods();
+      _cleanupReconnectTimer();
+      _completeClose();
+      _cleanupTimeout();
+      _cleanupPingTimer();
+    } catch (exception){
+      _logger.warning("Cleaup failed",exception);
+    }
+  }
+
+
+  void removeAllCallbacks(){
+    if (_callbacks != null){
+      _callbacks.clear();
+    }
+  }
+
+  void removeAllMethods(){
+    if (_methods != null){
+      _methods.clear();
+    }
+  }
+
   /// Removes the specified handler for the specified hub method.
   ///
   /// You must pass the exact same Function instance as was previously passed to HubConnection.on. Passing a different instance (even if the function
